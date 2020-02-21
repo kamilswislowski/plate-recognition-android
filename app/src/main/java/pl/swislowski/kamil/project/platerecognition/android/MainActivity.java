@@ -1,23 +1,23 @@
 package pl.swislowski.kamil.project.platerecognition.android;
 
-import android.content.res.Resources;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.util.Log;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import pl.swislowski.kamil.project.platerecognition.android.service.DefaultLocalhostService;
+import pl.swislowski.kamil.project.platerecognition.android.constants.Constants;
+import pl.swislowski.kamil.project.platerecognition.android.service.RecognitionRegistrationPlateResultService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,19 +37,12 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
-                Log.i(TAG, "MyClass.getView() — get item number ");
+                Log.i(TAG, "MainActivity on click.");
+                boolean hasCamera = checkCameraHardware(getApplicationContext());
 
-                Resources resources = getResources();
-                InputStream inputStream = resources.openRawResource(R.raw.fiat_tablice);
-
-//                DefaultLocalhostService.dummy();
-
-                try {
-                    DefaultLocalhostService.recognition(inputStream);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (hasCamera) {
+                    dispatchTakePictureIntent();
                 }
-
             }
         });
 
@@ -75,5 +68,36 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Check if this device has a camera
+     */
+    private boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            // this device has a camera
+            return true;
+        } else {
+            // no camera on this device
+            return false;
+        }
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, Constants.REQUEST_IMAGE_CAPTURE);
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.i(TAG, "On activity result");
+
+        RecognitionRegistrationPlateResultService recognitionRegistrationPlateResultService =
+                new RecognitionRegistrationPlateResultService();
+        recognitionRegistrationPlateResultService.cameraResult(requestCode, resultCode, data);
     }
 }

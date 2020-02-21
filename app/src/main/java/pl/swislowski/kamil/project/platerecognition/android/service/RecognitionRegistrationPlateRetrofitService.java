@@ -7,8 +7,8 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 
-public interface RecognizeService {
+public interface RecognitionRegistrationPlateRetrofitService {
     @Multipart
     @POST("plate-recognition/recognize")
-    Call<RegistrationPlateModel> uploadImage(@Part MultipartBody.Part filePart);
+    Call<RegistrationPlateModel> recognize(@Part MultipartBody.Part filePart);
 }
