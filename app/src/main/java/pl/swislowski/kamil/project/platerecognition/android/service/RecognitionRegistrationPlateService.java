@@ -12,8 +12,6 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import pl.swislowski.kamil.project.platerecognition.spring.web.model.RegistrationPlateModel;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -21,8 +19,12 @@ public class RecognitionRegistrationPlateService {
 
     private static final String TAG = "RecognitionRegistrationPlateService";
     public static final String SERVER_URL = "http://10.0.2.2:8080/";
+    public static final String HEROKU_SERVER_URL = "https://plate-recognition-spring.herokuapp.com/";
 
-    public static void recognition(InputStream inputStream, String fileName) throws IOException {
+    @SuppressLint("LongLogTag")
+    public static RegistrationPlateModel recognition(InputStream inputStream, String fileName) throws IOException {
+
+        Log.i(TAG, "########Starting recognition method ...");
 
         byte[] buffor = new byte[512];
         ByteArrayOutputStream upload = new ByteArrayOutputStream();
@@ -36,7 +38,7 @@ public class RecognitionRegistrationPlateService {
                 RequestBody.create(MediaType.parse("image/*"), upload.toByteArray()));
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(SERVER_URL)
+                .baseUrl(HEROKU_SERVER_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -45,20 +47,6 @@ public class RecognitionRegistrationPlateService {
 
         Call<RegistrationPlateModel> call = recognitionRegistrationPlateRetrofitService.recognize(filePart);
 
-
-        call.enqueue(new Callback<RegistrationPlateModel>() {
-            @SuppressLint("LongLogTag")
-            @Override
-            public void onResponse(Call<RegistrationPlateModel> call, Response<RegistrationPlateModel> response) {
-                RegistrationPlateModel body = response.body();
-                Log.i(TAG, "On response : " + body);
-            }
-
-            @SuppressLint("LongLogTag")
-            @Override
-            public void onFailure(Call<RegistrationPlateModel> call, Throwable t) {
-                Log.i(TAG, "On failure : " + t);
-            }
-        });
+        return call.execute().body();
     }
 }

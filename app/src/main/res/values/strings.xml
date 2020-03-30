@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">plate-recognition-android</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">Czyje to blachy?</string>
+    <string name="action_settings">Ustawienia</string>
 </resources>

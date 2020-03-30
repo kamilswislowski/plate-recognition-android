@@ -3,12 +3,14 @@ package pl.swislowski.kamil.project.platerecognition.android;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -18,10 +20,13 @@ import com.google.android.material.snackbar.Snackbar;
 
 import pl.swislowski.kamil.project.platerecognition.android.constants.Constants;
 import pl.swislowski.kamil.project.platerecognition.android.service.RecognitionRegistrationPlateResultService;
+import pl.swislowski.kamil.project.platerecognition.spring.web.model.RegistrationPlateModel;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private TextView recognizedNumberTextview;
+    private TextView voivodeshipTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        recognizedNumberTextview = findViewById(R.id.recognized_numbers_textview);
+        voivodeshipTextView = findViewById(R.id.voivodeshipTextView);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -98,6 +106,17 @@ public class MainActivity extends AppCompatActivity {
 
         RecognitionRegistrationPlateResultService recognitionRegistrationPlateResultService =
                 new RecognitionRegistrationPlateResultService();
-        recognitionRegistrationPlateResultService.cameraResult(requestCode, resultCode, data);
+
+        if (requestCode == Constants.REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            RegistrationPlateModel registrationPlateModel =
+                    recognitionRegistrationPlateResultService.cameraResult(imageBitmap);
+            Log.i(TAG, "#####RegistrationPlateModel : " + registrationPlateModel);
+
+            String registrationNumber = registrationPlateModel.getRegistrationNumber();
+
+            recognizedNumberTextview.setText(registrationNumber);
+        }
     }
 }
