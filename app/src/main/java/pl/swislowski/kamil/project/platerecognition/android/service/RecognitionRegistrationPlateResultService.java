@@ -8,6 +8,7 @@ import android.util.Log;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -19,7 +20,7 @@ public class RecognitionRegistrationPlateResultService {
     private static final String TAG = "RecognitionRegistrationPlateResultService";
 
     @SuppressLint("LongLogTag")
-    public RegistrationPlateModel cameraResult(Bitmap imageBitmap) {
+    public RegistrationPlateModel cameraResult(Bitmap imageBitmap, InputStream inputStream) {
 
         Log.i(TAG, "Getting camera result ...");
 
