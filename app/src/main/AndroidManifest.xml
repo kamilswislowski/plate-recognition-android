@@ -26,6 +26,11 @@
         android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="pl.swislowski.kamil.project.platerecognition.android"

@@ -3,6 +3,10 @@ package pl.swislowski.kamil.project.platerecognition.android;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,8 +20,15 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentActivity;
 import androidx.core.content.FileProvider;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -27,32 +38,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import pl.swislowski.kamil.project.platerecognition.android.constants.Constants;
+import pl.swislowski.kamil.project.platerecognition.android.service.RecognitionRegistrationPlateResultService;
 import pl.swislowski.kamil.project.platerecognition.android.service.rrpa.RRPAsyncTask;
 import pl.swislowski.kamil.project.platerecognition.spring.web.model.RegistrationPlateModel;
 
 import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.REQUEST_TAKE_PHOTO;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private static final String TAG = "MainActivity";
     private String currentPhotoPath;
     private TextView recognizedNumberTextview;
     private TextView voivodeshipTextView;
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//        setSupportActionBar(toolbar);
 
         recognizedNumberTextview = findViewById(R.id.recognized_numbers_textview);
         voivodeshipTextView = findViewById(R.id.voivodeshipTextView);
 
         FloatingActionButton fab = findViewById(R.id.fab);
+//        Intent mapIntent = new Intent(this, MapsActivity.class);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -60,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
 
                 Log.i(TAG, "MainActivity on click.");
+//                startActivity(mapIntent);
+
                 boolean hasCamera = checkCameraHardware(getApplicationContext());
 
                 if (hasCamera) {
@@ -67,6 +85,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.mapFragment);
+        mapFragment.getMapAsync(this);
 
     }
 
@@ -209,6 +232,27 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "##### AFTER execute AsyncTask");
 
 
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        Log.i(TAG, "####### onMapReady ");
+        // Add a marker in Sydney and move the camera
+        LatLng sydney = new LatLng(52.4293273, 19.4619176);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+//        mMap.animateCamera(CameraUpdateFactory.zoomTo(8.0f));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney, 12.0f));
+//        mMap.setLatLngBoundsForCameraTarget(new LatLngBounds());
+        Geocoder geo = new Geocoder(this.getApplicationContext(), Locale.getDefault());
+        try {
+            List<Address> addresses = geo.getFromLocationName("Województwo mazowieckie\n" +
+                    "powiat gostyniński (Gostynin)", 1);
+            Log.i(TAG, "##### Addresses : " + addresses);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
