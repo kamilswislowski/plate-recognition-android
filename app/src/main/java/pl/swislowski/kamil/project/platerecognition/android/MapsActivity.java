@@ -22,6 +22,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final String TAG = "MapsActivity";
     private GoogleMap mMap;
+    private String mLocationName = "Województwo mazowieckie powiat gostyniński (Gostynin)";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +57,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        mMap.setLatLngBoundsForCameraTarget(new LatLngBounds());
         Geocoder geo = new Geocoder(this.getApplicationContext(), Locale.getDefault());
         try {
-            List<Address> addresses = geo.getFromLocationName("Województwo mazowieckie\n" +
-                    "powiat gostyniński (Gostynin)", 1);
+            List<Address> addresses = geo.getFromLocationName(mLocationName, 1);
             Log.i(TAG, "##### Addresses : " + addresses);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getLocationName() {
+        return mLocationName;
+    }
+
+    public void setLocationName(String mLocationName) {
+        this.mLocationName = mLocationName;
     }
 }
