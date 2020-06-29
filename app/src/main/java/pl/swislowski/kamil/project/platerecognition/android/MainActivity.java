@@ -57,6 +57,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private TextView voivodeshipTextView;
     private GoogleMap mMap;
 
+    private ActivityActionPerformerListener listener;
+
+    public interface ActivityActionPerformerListener{
+        void actionPerform(String string);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,13 +134,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-//    private void dispatchTakePictureIntent() {
-//        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-//            startActivityForResult(takePictureIntent, Constants.REQUEST_IMAGE_CAPTURE);
-//        }
-//    }
-
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
@@ -163,55 +162,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         super.onActivityResult(requestCode, resultCode, data);
         Log.i(TAG, "On activity result");
 
-//        RecognitionRegistrationPlateResultService recognitionRegistrationPlateResultService =
-//                new RecognitionRegistrationPlateResultService();
-
         if (requestCode == Constants.REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-//            Bundle extras = data.getExtras();
-//            Bitmap imageBitmap = (Bitmap) extras.get("data");
-//            RegistrationPlateModel registrationPlateModel =
-//                    recognitionRegistrationPlateResultService.cameraResult(imageBitmap);
 
             try {
-//                Bundle extras = data.getExtras();
-//                Bitmap imageBitmap = (Bitmap) extras.get(MediaStore.EXTRA_OUTPUT);
-
-//                ByteArrayOutputStream bos = null;
-//                ByteArrayInputStream bs = null;
-//
-//                bos = new ByteArrayOutputStream();
-//                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 98, bos);
-//                byte[] bitmapdata = bos.toByteArray();
-//                bs = new ByteArrayInputStream(bitmapdata);
-
-//                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-//                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-//                Log.i(TAG, "#### imageBitmap height: " + imageBitmap.getHeight());
-//                Log.i(TAG, "#### imageBitmap width: " + imageBitmap.getWidth());
-//                byte[] buf = baos.toByteArray();
-//                InputStream is = new ByteArrayInputStream(buf);
-
-//                File sdCard = Environment.getExternalStorageDirectory();
-//                Log.i(TAG, "#### sdCard: " + sdCard);
-//                File dir = new File (sdCard.getAbsolutePath() + "/Download");
-//                File dir = new File(sdCard.getAbsolutePath() + "/Android/data");
-//                Log.i(TAG, "#### dir: " + dir);
-//                boolean mkdirs = dir.mkdirs();
-//                File file = new File(dir, "/filename.jpg");
-
-//                FileOutputStream f = new FileOutputStream(file);
-//                f.write(buf);
-//                Files.write(Paths.get("image.jpg"), buf);
-
-//                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-//                String imageFileName = "_ANDROID_" + timeStamp;
-
-//                Resources resources = getResources();
-//                InputStream inputStream = resources.openRawResource(R.raw.fiat_tablice);
-
-//                InputStream is = new FileInputStream(currentPhotoPath);
-
                 RRPAsyncTask asyncTask = new RRPAsyncTask();
                 AsyncTask<InputStream, Void, RegistrationPlateModel> execute =
                         asyncTask.execute(new FileInputStream(currentPhotoPath));
@@ -221,6 +174,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 if (registrationPlateModel != null) {
                     String registrationNumber = registrationPlateModel.getRegistrationNumber();
                     recognizedNumberTextview.setText(registrationNumber);
+                    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                            .findFragmentById(R.id.map);
+                    Log.i(TAG, "####### mapFragment : " + mapFragment);
+
                 }
             } catch (ExecutionException e) {
                 e.printStackTrace();
