@@ -3,8 +3,6 @@ package pl.swislowski.kamil.project.platerecognition.android;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -18,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentActivity;
 import androidx.core.content.FileProvider;
@@ -43,7 +40,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import pl.swislowski.kamil.project.platerecognition.android.constants.Constants;
-import pl.swislowski.kamil.project.platerecognition.android.service.RecognitionRegistrationPlateResultService;
+import pl.swislowski.kamil.project.platerecognition.android.fragment.MapFragment;
 import pl.swislowski.kamil.project.platerecognition.android.service.rrpa.RRPAsyncTask;
 import pl.swislowski.kamil.project.platerecognition.spring.web.model.RegistrationPlateModel;
 
@@ -53,8 +50,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final String TAG = "MainActivity";
     private String currentPhotoPath;
-    private TextView recognizedNumberTextview;
-    private TextView voivodeshipTextView;
+    private TextView descriptionTextView;
+    private TextView mapTextView;
     private GoogleMap mMap;
 
     private ActivityActionPerformerListener listener;
@@ -70,8 +67,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         Toolbar toolbar = findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
 
-        recognizedNumberTextview = findViewById(R.id.recognized_numbers_textview);
-        voivodeshipTextView = findViewById(R.id.voivodeshipTextView);
+        descriptionTextView = findViewById(R.id.descriptionTextView);
+        mapTextView = findViewById(R.id.mapTextView);
+
+        getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.descriptionFragment, DescriptionFragment.newInstance())
+                .add(R.id.mapFragment, MapFragment.newInstance())
+                .commitNow();
+
+        MapFragment mapFragment =(MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
+        Log.i(TAG, "########### #### mapFragment : " + mapFragment);
+        listener = mapFragment;
+
+
 
         FloatingActionButton fab = findViewById(R.id.fab);
 //        Intent mapIntent = new Intent(this, MapsActivity.class);
@@ -93,9 +101,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.mapFragment);
-        mapFragment.getMapAsync(this);
+
+//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+//                .findFragmentById(R.id.mapFragment);
+
+
+//        mapFragment.getMapAsync(this);
 
     }
 
@@ -173,10 +184,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if (registrationPlateModel != null) {
                     String registrationNumber = registrationPlateModel.getRegistrationNumber();
-                    recognizedNumberTextview.setText(registrationNumber);
-                    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                            .findFragmentById(R.id.map);
-                    Log.i(TAG, "####### mapFragment : " + mapFragment);
+                    mapTextView.setText(registrationNumber);
+
+                    String locationLabel = registrationPlateModel.getLocationLabel();
+                    listener.actionPerform(locationLabel);
+
+//                    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+//                            .findFragmentById(R.id.mapFragment);
+//                    Log.i(TAG, "####### mapFragment : " + mapFragment);
 
                 }
             } catch (ExecutionException e) {
