@@ -20,6 +20,7 @@ import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -30,13 +31,11 @@ import java.util.Locale;
 import pl.swislowski.kamil.project.platerecognition.android.MainActivity;
 import pl.swislowski.kamil.project.platerecognition.android.R;
 
-
 public class MapFragment extends Fragment implements MainActivity.ActivityActionPerformerListener {
 
     private static final String TAG = "MapFragment";
-    private MainViewModel mViewModel;
 
-    MapView mMapView;
+    private MapView mMapView;
     private GoogleMap googleMap;
 
     private String currentLocation = "Gostynin";
@@ -128,16 +127,17 @@ public class MapFragment extends Fragment implements MainActivity.ActivityAction
             e.printStackTrace();
         }
 
-        Button viewByIdButton = (Button) rootView.findViewById(R.id.button);
-        viewByIdButton.setOnClickListener((event) -> {
-            Log.i(TAG, "Button clicked " + event);
-            actionPerformerListener.action("#### TEST TEXT ####");
-        });
+//        Button viewByIdButton = (Button) rootView.findViewById(R.id.button);
+//        viewByIdButton.setOnClickListener((event) -> {
+//            Log.i(TAG, "Button clicked " + event);
+//            actionPerformerListener.action("#### TEST TEXT ####");
+//        });
 
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap mMap) {
                 googleMap = mMap;
+                googleMap.getUiSettings().setZoomControlsEnabled(true);
 
                 // For showing a move to my location button
 //                googleMap.setMyLocationEnabled(true);

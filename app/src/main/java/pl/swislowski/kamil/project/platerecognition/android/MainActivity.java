@@ -16,14 +16,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentActivity;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -40,13 +40,15 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import pl.swislowski.kamil.project.platerecognition.android.constants.Constants;
+import pl.swislowski.kamil.project.platerecognition.android.fragment.DescriptionFragment;
 import pl.swislowski.kamil.project.platerecognition.android.fragment.MapFragment;
+import pl.swislowski.kamil.project.platerecognition.android.main.VoivodeshipExtractor;
 import pl.swislowski.kamil.project.platerecognition.android.service.rrpa.RRPAsyncTask;
 import pl.swislowski.kamil.project.platerecognition.spring.web.model.RegistrationPlateModel;
 
 import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.REQUEST_TAKE_PHOTO;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "MainActivity";
     private String currentPhotoPath;
@@ -56,7 +58,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     private ActivityActionPerformerListener listener;
 
-    public interface ActivityActionPerformerListener{
+    public interface ActivityActionPerformerListener {
         void actionPerform(String string);
     }
 
@@ -65,20 +67,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar);
 
         descriptionTextView = findViewById(R.id.descriptionTextView);
         mapTextView = findViewById(R.id.mapTextView);
 
         getSupportFragmentManager().beginTransaction()
-//                    .add(R.id.descriptionFragment, DescriptionFragment.newInstance())
+//                .add(R.id.descriptionFragment, DescriptionFragment.newInstance())
                 .add(R.id.mapFragment, MapFragment.newInstance())
                 .commitNow();
 
-        MapFragment mapFragment =(MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
+        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
         Log.i(TAG, "########### #### mapFragment : " + mapFragment);
         listener = mapFragment;
-
 
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -184,10 +185,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if (registrationPlateModel != null) {
                     String registrationNumber = registrationPlateModel.getRegistrationNumber();
-                    mapTextView.setText(registrationNumber);
+                    if (registrationNumber != null) {
+                        mapTextView.setText(registrationNumber.toUpperCase());
+                    }
 
                     String locationLabel = registrationPlateModel.getLocationLabel();
                     listener.actionPerform(locationLabel);
+
+                    VoivodeshipExtractor voivodeshipExtractor = new VoivodeshipExtractor();
+                    String extracted = voivodeshipExtractor.extract(locationLabel);
+                    descriptionTextView.setText(extracted);
 
 //                    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 //                            .findFragmentById(R.id.mapFragment);
