@@ -19,7 +19,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
-import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -40,10 +39,9 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import pl.swislowski.kamil.project.platerecognition.android.constants.Constants;
-import pl.swislowski.kamil.project.platerecognition.android.fragment.DescriptionFragment;
 import pl.swislowski.kamil.project.platerecognition.android.fragment.MapFragment;
 import pl.swislowski.kamil.project.platerecognition.android.main.VoivodeshipExtractor;
-import pl.swislowski.kamil.project.platerecognition.android.service.rrpa.RRPAsyncTask;
+import pl.swislowski.kamil.project.platerecognition.android.service.RecognitionRegistrationPlateAsyncTask;
 import pl.swislowski.kamil.project.platerecognition.spring.web.model.RegistrationPlateModel;
 
 import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.REQUEST_TAKE_PHOTO;
@@ -177,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (requestCode == Constants.REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
 
             try {
-                RRPAsyncTask asyncTask = new RRPAsyncTask();
+                RecognitionRegistrationPlateAsyncTask asyncTask = new RecognitionRegistrationPlateAsyncTask();
                 AsyncTask<InputStream, Void, RegistrationPlateModel> execute =
                         asyncTask.execute(new FileInputStream(currentPhotoPath));
                 RegistrationPlateModel registrationPlateModel = execute.get();

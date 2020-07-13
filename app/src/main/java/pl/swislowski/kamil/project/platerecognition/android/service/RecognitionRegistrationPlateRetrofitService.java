@@ -10,5 +10,5 @@ import retrofit2.http.Part;
 public interface RecognitionRegistrationPlateRetrofitService {
     @Multipart
     @POST("plate-recognition/recognize")
-    Call<RegistrationPlateModel> recognize(@Part MultipartBody.Part filePart);
+    Call<RegistrationPlateModel> recognizeAsync(@Part MultipartBody.Part filePart);
 }

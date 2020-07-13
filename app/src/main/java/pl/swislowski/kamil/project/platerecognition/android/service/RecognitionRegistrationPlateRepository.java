@@ -1,4 +1,4 @@
-package pl.swislowski.kamil.project.platerecognition.android.service.rrpa;
+package pl.swislowski.kamil.project.platerecognition.android.service;
 
 import android.util.Log;
 
@@ -13,7 +13,7 @@ import pl.swislowski.kamil.project.platerecognition.spring.web.model.Registratio
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
-public class RRPRepository {
+public class RecognitionRegistrationPlateRepository {
     //TODO: Opcjonalnie zwracać Optionala zamiast pustego stringa.
     public String findByRegistrationNumber(RegistrationPlateModel registrationPlateModel) throws IOException {
         Document doc = Jsoup.connect("http://rejestracje.website.media.pl/?word="
