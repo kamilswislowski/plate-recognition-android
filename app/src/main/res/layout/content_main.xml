@@ -4,48 +4,38 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="pl.swislowski.kamil.project.platerecognition.android.MainActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context="pl.swislowski.kamil.project.platerecognition.android.MainActivity">
 
     <LinearLayout
         android:id="@+id/descriptionFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight=".15"
+        android:layout_weight=".10"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/descriptionTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Description TextView" />
+            android:gravity="center"
+            android:textStyle="bold"
+            android:text="@string/voievodeship_name" />
+
+        <TextView
+            android:id="@+id/mapTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:text="@string/registration_number" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/mapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight=".70"
+        android:layout_weight=".90"
         android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/mapTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Map TextView" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/actionFragment"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight=".15"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/actionFragmentButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
     </LinearLayout>
 </LinearLayout>
