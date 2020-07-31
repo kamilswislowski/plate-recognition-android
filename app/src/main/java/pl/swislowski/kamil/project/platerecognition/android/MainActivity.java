@@ -1,5 +1,6 @@
 package pl.swislowski.kamil.project.platerecognition.android;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,8 +17,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -47,6 +50,9 @@ import pl.swislowski.kamil.project.platerecognition.spring.web.model.Registratio
 import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.REQUEST_TAKE_PHOTO;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+
+    private static final int PERMISSION_REQUEST_CAMERA = 0;
+    private static final int PERMISSION_REQUEST_INTERNET = 1;
 
     private static final String TAG = "MainActivity";
     private String currentPhotoPath;
@@ -94,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 boolean hasCamera = checkCameraHardware(getApplicationContext());
 
                 if (hasCamera) {
-                    dispatchTakePictureIntent();
+                    showCameraPreview();
                 }
             }
         });
@@ -107,6 +113,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 //        mapFragment.getMapAsync(this);
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.i(TAG, "#########onRequestPermissionsResult");
     }
 
     @Override
@@ -248,6 +259,48 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Save a file: path for use with ACTION_VIEW intents
         currentPhotoPath = image.getAbsolutePath();
         return image;
+    }
+
+    private void showCameraPreview() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Permission is already available, start camera preview");
+            dispatchTakePictureIntent();
+        } else {
+            Log.i(TAG, "Permission is missing and must be requested.");
+            requestCameraPermission();
+            requestInternetPermission();
+        }
+    }
+
+    private void requestCameraPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+            Snackbar.make(findViewById(R.id.toolbar), "We need some permissions.",
+                    Snackbar.LENGTH_INDEFINITE).setAction("Ok", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.i(TAG, "OnClick requestCameraPermission");
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.CAMERA},
+                            PERMISSION_REQUEST_CAMERA);
+                }
+            }).show();
+        }
+    }
+
+    private void requestInternetPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.INTERNET)) {
+            Snackbar.make(findViewById(R.id.toolbar), "We need some permissions.",
+                    Snackbar.LENGTH_INDEFINITE).setAction("Ok", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.i(TAG, "OnClick requestInternetPermission");
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.INTERNET},
+                            PERMISSION_REQUEST_INTERNET);
+                }
+            }).show();
+        }
     }
 
 }
