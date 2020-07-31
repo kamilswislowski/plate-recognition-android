@@ -35,7 +35,7 @@ public class RecognitionRegistrationPlateService {
                 RequestBody.create(MediaType.parse("image/*"), upload.toByteArray()));
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(SERVER_URL)
+                .baseUrl(HEROKU_SERVER_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
