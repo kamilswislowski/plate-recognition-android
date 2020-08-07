@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,11 +25,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -53,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int PERMISSION_REQUEST_CAMERA = 0;
     private static final int PERMISSION_REQUEST_INTERNET = 1;
+    private static final int PERMISSION_REQUEST_LOCATION = 2;
 
     private static final String TAG = "MainActivity";
     private String currentPhotoPath;
@@ -60,10 +66,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextView mapTextView;
     private GoogleMap mMap;
 
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private Location currentLocation;
+
     private ActivityActionPerformerListener listener;
 
     public interface ActivityActionPerformerListener {
         void actionPerform(String string);
+        void actionPerform(Location location);
     }
 
     @Override
@@ -72,6 +82,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+        fetchLocation();
 
         descriptionTextView = findViewById(R.id.descriptionTextView);
         mapTextView = findViewById(R.id.mapTextView);
@@ -301,6 +314,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }).show();
         }
+    }
+
+    private void fetchLocation() {
+        Toast.makeText(getApplicationContext(),"Toasttext",Toast.LENGTH_LONG).show();
+        if (ActivityCompat.checkSelfPermission(
+                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION);
+            return;
+        }
+        Task<Location> task = fusedLocationProviderClient.getLastLocation();
+        task.addOnSuccessListener(location -> listener.actionPerform(location));
     }
 
 }
