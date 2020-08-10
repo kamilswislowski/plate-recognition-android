@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public interface ActivityActionPerformerListener {
         void actionPerform(String string);
+
         void actionPerform(Location location);
     }
 
@@ -275,14 +276,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void showCameraPreview() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+
+//        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+//                && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_LOCATION);
+//            return;
+//        }
+
+
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Permission is already available, start camera preview");
+
             dispatchTakePictureIntent();
         } else {
             Log.i(TAG, "Permission is missing and must be requested.");
             requestCameraPermission();
             requestInternetPermission();
+//            requestCoarseLocationPermission();
+//            requestFineLocationPermission();
         }
     }
 
@@ -296,6 +309,36 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     ActivityCompat.requestPermissions(MainActivity.this,
                             new String[]{Manifest.permission.CAMERA},
                             PERMISSION_REQUEST_CAMERA);
+                }
+            }).show();
+        }
+    }
+
+    private void requestCoarseLocationPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            Snackbar.make(findViewById(R.id.toolbar), "We need some permissions.",
+                    Snackbar.LENGTH_INDEFINITE).setAction("Ok", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.i(TAG, "OnClick requestCoarseLocationPermission");
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                            PERMISSION_REQUEST_LOCATION);
+                }
+            }).show();
+        }
+    }
+
+    private void requestFineLocationPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            Snackbar.make(findViewById(R.id.toolbar), "We need some permissions.",
+                    Snackbar.LENGTH_INDEFINITE).setAction("Ok", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.i(TAG, "OnClick requestFineLocationPermission");
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            PERMISSION_REQUEST_LOCATION);
                 }
             }).show();
         }
@@ -317,13 +360,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void fetchLocation() {
-        Toast.makeText(getApplicationContext(),"Toasttext",Toast.LENGTH_LONG).show();
-        if (ActivityCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION);
+        Toast.makeText(getApplicationContext(), "Toasttext", Toast.LENGTH_LONG).show();
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_LOCATION);
             return;
         }
+
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(location -> listener.actionPerform(location));
     }
