@@ -41,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -52,13 +53,12 @@ import pl.swislowski.kamil.project.platerecognition.android.main.VoivodeshipExtr
 import pl.swislowski.kamil.project.platerecognition.android.service.RecognitionRegistrationPlateAsyncTask;
 import pl.swislowski.kamil.project.platerecognition.spring.web.model.RegistrationPlateModel;
 
+import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.PERMISSION_REQUEST_CAMERA;
+import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.PERMISSION_REQUEST_INTERNET;
+import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.PERMISSION_REQUEST_LOCATION;
 import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.REQUEST_TAKE_PHOTO;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
-
-    private static final int PERMISSION_REQUEST_CAMERA = 0;
-    private static final int PERMISSION_REQUEST_INTERNET = 1;
-    private static final int PERMISSION_REQUEST_LOCATION = 2;
 
     private static final String TAG = "MainActivity";
     private String currentPhotoPath;
@@ -84,6 +84,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+//        requestCoarseLocationPermission();
+
+        Log.i(TAG, "#### onCreate - beforeFetchLocation");
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
         fetchLocation();
 
@@ -131,7 +134,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.i(TAG, "#########onRequestPermissionsResult");
+        Log.i(TAG, "#########onRequestPermissionsResult - requestCode : " + requestCode);
+        Log.i(TAG, "#########onRequestPermissionsResult - grantResults : " + Arrays.asList(permissions));
+        Log.i(TAG, "#########onRequestPermissionsResult - grantResults : " + Arrays.toString(grantResults));
+
+        if (requestCode == PERMISSION_REQUEST_LOCATION) {
+        fetchLocation();
+//            Task<Location> task = fusedLocationProviderClient.getLastLocation();
+//            task.addOnSuccessListener(location -> listener.actionPerform(location));
+        }
     }
 
     @Override
@@ -315,6 +326,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void requestCoarseLocationPermission() {
+        Log.i(TAG, "requestCoarseLocationPermissionBefore ###########");
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
             Snackbar.make(findViewById(R.id.toolbar), "We need some permissions.",
                     Snackbar.LENGTH_INDEFINITE).setAction("Ok", new View.OnClickListener() {
@@ -327,6 +339,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }).show();
         }
+//                    ActivityCompat.requestPermissions(this,
+//                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+//                            PERMISSION_REQUEST_LOCATION);
+        Log.i(TAG, "requestCoarseLocationPermissionAfter ###########");
+
     }
 
     private void requestFineLocationPermission() {
@@ -364,12 +381,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_LOCATION);
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_LOCATION);
             return;
         }
-
+        Log.i(TAG, "fetchLocationBefore ###########");
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(location -> listener.actionPerform(location));
+        task.addOnFailureListener( e-> System.out.println("addOnFailureListener " + e));
+         task.addOnSuccessListener(location -> listener.actionPerform(location));
+        Log.i(TAG, "fetchLocationAfter#############");
     }
 
 }
