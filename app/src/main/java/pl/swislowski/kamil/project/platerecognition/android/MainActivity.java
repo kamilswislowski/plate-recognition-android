@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,11 +25,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -36,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -47,12 +53,12 @@ import pl.swislowski.kamil.project.platerecognition.android.main.VoivodeshipExtr
 import pl.swislowski.kamil.project.platerecognition.android.service.RecognitionRegistrationPlateAsyncTask;
 import pl.swislowski.kamil.project.platerecognition.spring.web.model.RegistrationPlateModel;
 
+import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.PERMISSION_REQUEST_CAMERA;
+import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.PERMISSION_REQUEST_INTERNET;
+import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.PERMISSION_REQUEST_LOCATION;
 import static pl.swislowski.kamil.project.platerecognition.android.constants.Constants.REQUEST_TAKE_PHOTO;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
-
-    private static final int PERMISSION_REQUEST_CAMERA = 0;
-    private static final int PERMISSION_REQUEST_INTERNET = 1;
 
     private static final String TAG = "MainActivity";
     private String currentPhotoPath;
@@ -60,10 +66,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextView mapTextView;
     private GoogleMap mMap;
 
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private Location currentLocation;
+
     private ActivityActionPerformerListener listener;
 
     public interface ActivityActionPerformerListener {
         void actionPerform(String string);
+
+        void actionPerform(Location location);
     }
 
     @Override
@@ -72,6 +83,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+//        requestCoarseLocationPermission();
+
+        Log.i(TAG, "#### onCreate - beforeFetchLocation");
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+        fetchLocation();
 
         descriptionTextView = findViewById(R.id.descriptionTextView);
         mapTextView = findViewById(R.id.mapTextView);
@@ -117,7 +134,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.i(TAG, "#########onRequestPermissionsResult");
+        Log.i(TAG, "#########onRequestPermissionsResult - requestCode : " + requestCode);
+        Log.i(TAG, "#########onRequestPermissionsResult - grantResults : " + Arrays.asList(permissions));
+        Log.i(TAG, "#########onRequestPermissionsResult - grantResults : " + Arrays.toString(grantResults));
+
+        if (requestCode == PERMISSION_REQUEST_LOCATION) {
+        fetchLocation();
+//            Task<Location> task = fusedLocationProviderClient.getLastLocation();
+//            task.addOnSuccessListener(location -> listener.actionPerform(location));
+        }
     }
 
     @Override
@@ -262,14 +287,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void showCameraPreview() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+
+//        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+//                && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_LOCATION);
+//            return;
+//        }
+
+
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Permission is already available, start camera preview");
+
             dispatchTakePictureIntent();
         } else {
             Log.i(TAG, "Permission is missing and must be requested.");
             requestCameraPermission();
             requestInternetPermission();
+//            requestCoarseLocationPermission();
+//            requestFineLocationPermission();
         }
     }
 
@@ -288,6 +325,42 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    private void requestCoarseLocationPermission() {
+        Log.i(TAG, "requestCoarseLocationPermissionBefore ###########");
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            Snackbar.make(findViewById(R.id.toolbar), "We need some permissions.",
+                    Snackbar.LENGTH_INDEFINITE).setAction("Ok", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.i(TAG, "OnClick requestCoarseLocationPermission");
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                            PERMISSION_REQUEST_LOCATION);
+                }
+            }).show();
+        }
+//                    ActivityCompat.requestPermissions(this,
+//                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+//                            PERMISSION_REQUEST_LOCATION);
+        Log.i(TAG, "requestCoarseLocationPermissionAfter ###########");
+
+    }
+
+    private void requestFineLocationPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            Snackbar.make(findViewById(R.id.toolbar), "We need some permissions.",
+                    Snackbar.LENGTH_INDEFINITE).setAction("Ok", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.i(TAG, "OnClick requestFineLocationPermission");
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            PERMISSION_REQUEST_LOCATION);
+                }
+            }).show();
+        }
+    }
+
     private void requestInternetPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.INTERNET)) {
             Snackbar.make(findViewById(R.id.toolbar), "We need some permissions.",
@@ -301,6 +374,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }).show();
         }
+    }
+
+    private void fetchLocation() {
+        Toast.makeText(getApplicationContext(), "Toasttext", Toast.LENGTH_LONG).show();
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_LOCATION);
+            return;
+        }
+        Log.i(TAG, "fetchLocationBefore ###########");
+        Task<Location> task = fusedLocationProviderClient.getLastLocation();
+        task.addOnFailureListener( e-> System.out.println("addOnFailureListener " + e));
+         task.addOnSuccessListener(location -> listener.actionPerform(location));
+        Log.i(TAG, "fetchLocationAfter#############");
     }
 
 }

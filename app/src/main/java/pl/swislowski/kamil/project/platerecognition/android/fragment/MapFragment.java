@@ -3,12 +3,12 @@ package pl.swislowski.kamil.project.platerecognition.android.fragment;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +20,6 @@ import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -40,7 +39,7 @@ public class MapFragment extends Fragment implements MainActivity.ActivityAction
 
     private String currentLocation = "Gostynin";
 
-    private ActionPerformerListener actionPerformerListener;
+    private Location mLocation;
 
     public static MapFragment newInstance() {
         return new MapFragment();
@@ -81,39 +80,30 @@ public class MapFragment extends Fragment implements MainActivity.ActivityAction
         });
     }
 
-    public interface ActionPerformerListener {
-        public void action(String text);
+    @Override
+    public void actionPerform(Location location) {
+        mLocation = location;
+
+        LatLng currentLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         Log.i(TAG, "###### Context : " + context);
-        if (context instanceof ActionPerformerListener) {
-            actionPerformerListener = (ActionPerformerListener) context;
-        }
-    }
-
-    public void fragmentAction() {
-        actionPerformerListener.action("######## Action Performed Text");
     }
 
     @Override
     public void onDetach() {
-        actionPerformerListener = null;
         super.onDetach();
-    }
-
-    public void onClick() {
-        Log.i(TAG, "############# onClick method");
-
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-//        View rootView = inflater.inflate(R.layout.map_fragment, container, false);
         View rootView = inflater.inflate(R.layout.map_fragment, container, false);
 
         mMapView = rootView.findViewById(R.id.mapView);
@@ -127,28 +117,12 @@ public class MapFragment extends Fragment implements MainActivity.ActivityAction
             e.printStackTrace();
         }
 
-//        Button viewByIdButton = (Button) rootView.findViewById(R.id.button);
-//        viewByIdButton.setOnClickListener((event) -> {
-//            Log.i(TAG, "Button clicked " + event);
-//            actionPerformerListener.action("#### TEST TEXT ####");
-//        });
-
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap mMap) {
                 googleMap = mMap;
                 googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-                // For showing a move to my location button
-//                googleMap.setMyLocationEnabled(true);
-
-                // For dropping a marker at a point on the Map
-//                LatLng sydney = new LatLng(-34, 151);
-//                googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));
-
-                // For zooming automatically to the location of the marker
-//                CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
-//                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
                 LatLng sydney = new LatLng(52.4293273, 19.4619176);
                 mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -172,7 +146,6 @@ public class MapFragment extends Fragment implements MainActivity.ActivityAction
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-//        mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         // TODO: Use the ViewModel
     }
 
